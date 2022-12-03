@@ -10,7 +10,6 @@ screen = pygame.display.set_mode((W, H))
 FPS = 60
 clock = pygame.time.Clock()
 
-
 font_path = 'mario_font.ttf'
 font_large = pygame.font.SysFont(font_path, 48)
 font_small = pygame.font.SysFont(font_path, 24)
@@ -30,6 +29,7 @@ class SpriteFile:
     def __init__(self, file, w, h):
         self.__image = pygame.image.load(file)
         self.__rect = pygame.rect.Rect(0, 0, self.__image.get_rect().width / w - 1, self.__image.get_rect().height / h - 1)
+
 class Sprite:
     image = None
     def __init__(self, file, scale):
@@ -103,11 +103,10 @@ class Entity:
                 self.is_out = True
             else:
                 self.handle_input()
-
-        if self.rect.bottom > H - GROUND_H:
-            self.is_grounded = True
-            self.y_speed = 0
-            self.rect.bottom = H - GROUND_H
+            if self.rect.bottom > H - GROUND_H:
+                self.is_grounded = True
+                self.y_speed = 0
+                self.rect.bottom = H - GROUND_H
 
     def draw(self, surface):
         if self.is_dead:
@@ -123,11 +122,10 @@ class Entity:
                     surface.blit(self.image.stay.right.image, self.rect)
                 else:
                     surface.blit(self.image.stay.left.image, self.rect)
+        elif self.look_right:
+            surface.blit(self.image.jump.right.image, self.rect)
         else:
-            if self.look_right:
-                surface.blit(self.image.jump.right.image, self.rect)
-            else:
-                surface.blit(self.image.jump.left.image, self.rect)
+            surface.blit(self.image.jump.left.image, self.rect)
 
 class Player(Entity):
     def __init__(self, image):
@@ -156,9 +154,6 @@ class Player(Entity):
 
     def jump(self):
         self.y_speed = self.jump_speed
-
-    def update(self):
-        super().update()
 
 class Goomba(Entity):
     def __init__(self):
@@ -196,7 +191,7 @@ while running:
         if e.type == pygame.QUIT:
             running = False
         elif e.type == pygame.KEYDOWN:
-            if player.is_out:
+            if player.is_dead:
                 score = 0
                 spawn_delay = INIT_DELAY
                 last_spawn_time = pygame.time.get_ticks()
