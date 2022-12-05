@@ -26,12 +26,28 @@ GROUND_H = ground_image.get_height()
 class SpriteFile:
     __image = None
     __rect = None
-    def __init__(self, file, w, h):
+    __cols = 0
+    __rows = 0
+    def __init__(self, file, cols, rows):
         self.__image = pygame.image.load(file)
-        self.__rect = pygame.rect.Rect(0, 0, self.__image.get_rect().width / w - 1, self.__image.get_rect().height / h - 1)
+        self.__cols = cols
+        self.__rows = rows
+        self.__rect = pygame.rect.Rect(0, 0, self.__image.get_rect().width / cols - 1, self.__image.get_rect().height / rows - 1)
+        print(self.__rect)
+    def getImage(self, idx, rect):
+        surface = pygame.Surface((self.__rect.width, self.__rect.height), pygame.SRCALPHA, depth=32)
+        __area = self.__rect
+        __area.move((idx % self.__cols) * self.__rect.width, (idx // self.__cols) * self.__rect.height)
+        surface.blit(self.__image, self.__rect, __area)
+        surface = pygame.transform.scale(surface, rect)
+        return surface
+
+mario_moves = SpriteFile("mario_moves.png", 8, 6)
 
 class Sprite:
     image = None
+    def __init__(self, sprites, idx, scale):
+        self.image = sprites.getImage(idx, scale)
     def __init__(self, file, scale):
         self.image = pygame.image.load(file)
         self.image = pygame.transform.scale(self.image, scale)
@@ -58,18 +74,18 @@ class SpriteMoves:
         return self.stay.left.image.get_rect()
 
 player_image = SpriteMoves(
-    SpriteDirection(Sprite('mario_stay_l.png', (60,80)), Sprite('mario_stay_r.png', (60,80))),
-    SpriteDirection(Sprite('mario_jump_l.png', (60,80)), Sprite('mario_jump_r.png', (60,80))),
-    SpriteDirection(Sprite('mario_walk_l.png', (60,80)), Sprite('mario_walk_r.png', (60,80))),
-    Sprite('mario_dead.png', (60,80))
+    SpriteDirection(Sprite('mario_stay_l.png', (60, 80)), Sprite('mario_stay_r.png', (60, 80))),
+    SpriteDirection(Sprite('mario_jump_l.png', (60, 80)), Sprite('mario_jump_r.png', (60, 80))),
+    SpriteDirection(Sprite('mario_walk_l.png', (60, 80)), Sprite('mario_walk_r.png', (60, 80))),
+    Sprite('mario_dead.png', (60, 80))
 )
-player_dead_image = Sprite('mario_dead.png', (60,80))
 enemy_image = SpriteMoves(
-    SpriteDirection(Sprite('goomba.png', (80,80)), Sprite('goomba.png', (80,80))),
-    SpriteDirection(Sprite('goomba.png', (80,80)), Sprite('goomba.png', (80,80))),
-    SpriteDirection(Sprite('goomba.png', (80,80)), Sprite('goomba.png', (80,80))),
-    Sprite('goomba_dead.png', (80,80))
+    SpriteDirection(Sprite('goomba.png', (80, 80)), Sprite('goomba.png', (80, 80))),
+    SpriteDirection(Sprite('goomba.png', (80, 80)), Sprite('goomba.png', (80, 80))),
+    SpriteDirection(Sprite('goomba.png', (80, 80)), Sprite('goomba.png', (80, 80))),
+    Sprite('goomba_dead.png', (80, 80))
 )
+
 class Entity:
     def __init__(self, image):
         self.image = image
@@ -130,6 +146,8 @@ class Entity:
 class Player(Entity):
     def __init__(self, image):
         super().__init__(image)
+        self.__jumpSound = pygame.mixer.Sound("jump.wav")
+
         self.respawn()
         
     def handle_input(self):
@@ -154,6 +172,7 @@ class Player(Entity):
 
     def jump(self):
         self.y_speed = self.jump_speed
+        self.__jumpSound.play()
 
 class Goomba(Entity):
     def __init__(self):
@@ -178,6 +197,9 @@ class Goomba(Entity):
 
 player = Player(player_image)
 score = 0
+pygame.mixer.init()
+kickSound = pygame.mixer.Sound("kick.wav")
+themeSong = pygame.mixer.Sound("theme.mp3")
 
 goombas = []
 INIT_DELAY = 2000
@@ -186,6 +208,8 @@ DECREASE_BASE = 1.01
 last_spawn_time = pygame.time.get_ticks()
 
 running = True
+themeSong.play(1000)
+
 while running:
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
@@ -231,6 +255,7 @@ while running:
             if not player.is_dead and not goomba.is_dead and player.rect.colliderect(goomba.rect):
                 if (player.rect.bottom - player.y_speed) < goomba.rect.top:
                     goomba.kill()
+                    kickSound.play()
                     player.jump()
                     score += 1
                     spawn_delay = INIT_DELAY / (DECREASE_BASE ** score)
