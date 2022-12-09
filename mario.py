@@ -74,9 +74,18 @@ class SpriteMoves:
         return self.stay.left.image.get_rect()
 
 player_image = SpriteMoves(
-    SpriteDirection(Sprite('mario_stay_l.png', (60, 80)), Sprite('mario_stay_r.png', (60, 80))),
-    SpriteDirection(Sprite('mario_jump_l.png', (60, 80)), Sprite('mario_jump_r.png', (60, 80))),
-    SpriteDirection(Sprite('mario_walk_l.png', (60, 80)), Sprite('mario_walk_r.png', (60, 80))),
+    SpriteDirection(
+        Sprite('mario_stay_l.png', (60, 80)),
+        Sprite('mario_stay_r.png', (60, 80))
+    ),
+    SpriteDirection(
+        Sprite('mario_jump_l.png', (60, 80)),
+        Sprite('mario_jump_r.png', (60, 80))
+    ),
+    SpriteDirection(
+        Sprite('mario_walk_l.png', (60, 80)),
+        Sprite('mario_walk_r.png', (60, 80))
+    ),
     Sprite('mario_dead.png', (60, 80))
 )
 enemy_image = SpriteMoves(
