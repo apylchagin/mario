@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import pygame
 import random
 pygame.init()
@@ -15,34 +14,37 @@ font_large = pygame.font.SysFont(font_path, 48)
 font_small = pygame.font.SysFont(font_path, 24)
 
 game_over = False
-retry_text = font_small.render('PRESS ANY KEY', True, (255, 255, 255))
+retry_text = font_small.render('PRESS ANY KEY TO START', True, (255, 255, 255))
 retry_rect = retry_text.get_rect()
-retry_rect = (W // 2, H // 2)
+retry_rect.midtop = (W // 2, H // 2)
 
-ground_image = pygame.image.load('ground.png')
+score = 0
+
+ground_image = pygame.image.load('1ground.png')
 ground_image = pygame.transform.scale(ground_image, (804, 60))
 GROUND_H = ground_image.get_height()
 
 class SpriteFile:
-    __image = None
-    __rect = None
-    __cols = 0
-    __rows = 0
-    def __init__(self, file, cols, rows):
-        self.__image = pygame.image.load(file)
-        self.__cols = cols
-        self.__rows = rows
-        self.__rect = pygame.rect.Rect(0, 0, self.__image.get_rect().width / cols - 1, self.__image.get_rect().height / rows - 1)
-        print(self.__rect)
-    def getImage(self, idx, rect):
+     __image = None
+     __rect = None
+     __cols = 0
+     __rows = 0
+     def __init__(self, file, cols, rows):
+         self.__image = pygame.image.load(file)
+         self.__cols = cols
+         self.__rows = rows
+         self.__rect = pygame.rect.Rect(0, 0, self.__image.get_rect().width / cols - 1, self.__image.get_rect().height / rows - 1)
+         print(self.__rect)
+     def getImage(self, idx, rect):
         surface = pygame.Surface((self.__rect.width, self.__rect.height), pygame.SRCALPHA, depth=32)
         __area = self.__rect
         __area.move((idx % self.__cols) * self.__rect.width, (idx // self.__cols) * self.__rect.height)
         surface.blit(self.__image, self.__rect, __area)
         surface = pygame.transform.scale(surface, rect)
         return surface
+        return surface
 
-mario_moves = SpriteFile("mario_moves.png", 8, 6)
+mario_moves = SpriteFile('Girl.move.png', 1, 15)
 
 class Sprite:
     image = None
@@ -58,7 +60,7 @@ class SpriteDirection:
     def __init__(self, aleft, aright):
         self.left = aleft
         self.right = aright
-    
+
 class SpriteMoves:
     stay = None
     jump = None
@@ -75,25 +77,30 @@ class SpriteMoves:
 
 player_image = SpriteMoves(
     SpriteDirection(
-        Sprite('mario_stay_l.png', (60, 80)),
-        Sprite('mario_stay_r.png', (60, 80))
+        Sprite('Girl.stay.left.png', (60, 80)),
+        Sprite('Girl.stay.right.png', (60, 80))
     ),
     SpriteDirection(
-        Sprite('mario_jump_l.png', (60, 80)),
-        Sprite('mario_jump_r.png', (60, 80))
-    ),
+        Sprite('Girl.jump.left.png', (60, 80)),
+        Sprite('Girl.jump.right.png', (60, 80))
+    ),    
+               
     SpriteDirection(
-        Sprite('mario_walk_l.png', (60, 80)),
-        Sprite('mario_walk_r.png', (60, 80))
+        Sprite('Girl.left.png', (60, 80)),
+        Sprite('Girl.right.png', (60, 80))
     ),
-    Sprite('mario_dead.png', (60, 80))
+    Sprite('Girl.dead.png', (60, 80))
 )
-enemy_image = SpriteMoves(
-    SpriteDirection(Sprite('goomba.png', (80, 80)), Sprite('goomba.png', (80, 80))),
-    SpriteDirection(Sprite('goomba.png', (80, 80)), Sprite('goomba.png', (80, 80))),
-    SpriteDirection(Sprite('goomba.png', (80, 80)), Sprite('goomba.png', (80, 80))),
-    Sprite('goomba_dead.png', (80, 80))
-)
+
+
+enemy_image = pygame.image.load('ngoomba.png')
+enemy_image = pygame.transform.scale(enemy_image, (80, 80))
+
+enemy_dead_image = pygame.image.load('deadngoomba.png')
+enemy_dead_image = pygame.transform.scale(enemy_dead_image, (80, 80))
+
+player_image = pygame.image.load('Girl.png')
+player_image = pygame.transform.scale(player_image, (60, 80))
 
 class Entity:
     def __init__(self, image):
@@ -110,7 +117,15 @@ class Entity:
         self.is_grounded = False
 
     def handle_input(self):
-        pass
+         pass
+        
+
+    def kill(self, dead_image):
+        self.image = dead_image
+        self.is_dead = True
+        self.x_speed = -self.x_speed
+        self.y_speed = self.jump_speed
+
 
     def kill(self):
         self.is_dead = True
@@ -126,9 +141,9 @@ class Entity:
         if not self.is_dead:
             if self.rect.top > H - GROUND_H:
                 self.is_out = True
-            else:
-                self.handle_input()
-            if self.rect.bottom > H - GROUND_H:
+        else:
+            self.handle_input()
+        if self.rect.bottom > H - GROUND_H:
                 self.is_grounded = True
                 self.y_speed = 0
                 self.rect.bottom = H - GROUND_H
@@ -139,7 +154,7 @@ class Entity:
         elif self.is_grounded:
             if (self.x_speed > 0) or (self.x_speed < 0):
                 if self.look_right:
-                    surface.blit(self.image.walk.right.image, self.rect)
+                    surface.blit(self.image.walk.right.image, self.rect)    
                 else:
                     surface.blit(self.image.walk.left.image, self.rect)
             else:
@@ -152,13 +167,34 @@ class Entity:
         else:
             surface.blit(self.image.jump.left.image, self.rect)
 
+
+class Goomba(Entity):
+    def __init__(self):
+        super().__init__(enemy_image)
+        self.spawn()
+
+    def spawn(self):
+        direction = random.randint(0, 1)
+        if direction == 0:
+            self.x_speed = -self.speed
+            self.rect.bottomleft = (W, 0)
+        else:
+            self.x_speed = self.speed
+            self.rect.bottomright = (0, 0)
+
+    def update(self):
+        super().update()
+        if self.x_speed > 0 and self.rect.left > W or self.x_speed < 0 and self.rect.right < 0:
+            self.is_out = True
+
+
 class Player(Entity):
     def __init__(self, image):
         super().__init__(image)
-        self.__jumpSound = pygame.mixer.Sound("jump.wav")
+        self.__jumpSound = pygame.mixer.Sound('jump.wav')
 
         self.respawn()
-        
+
     def handle_input(self):
         self.x_speed = 0
 
@@ -169,12 +205,12 @@ class Player(Entity):
         elif keys[pygame.K_d]:
             self.x_speed = self.speed
             self.look_right = True
-            
+
         if self.is_grounded and keys[pygame.K_SPACE]:
             self.is_grounded = False
             self.jump()
 
-    def respawn(self):
+    def respawn(self, surface):
         self.is_out = False
         self.is_dead = False
         self.rect.midbottom = (W // 2, H - GROUND_H)
@@ -182,6 +218,26 @@ class Player(Entity):
     def jump(self):
         self.y_speed = self.jump_speed
         self.__jumpSound.play()
+
+    def draw(self):
+         if self.is_dead:
+            surface.blit(self.image.dead.image, self.rect)
+         elif self.is_grounded:
+            if (self.x_speed > 0) or (self.x_speed < 0):
+                if self.look_right:
+                    surface.blit(self.image.walk.right.image, self.rect)
+                else:
+                    surface.blit(self.image.walk.left.image, self.rect)
+            else:
+                if self.look_right:
+                    surface.blit(self.image.stay.right.image, self.rect)
+                else:
+                    surface.blit(self.image.stay.left.image, self.rect)
+         elif self.look_right:
+            surface.blit(self.image.jump.right.image, self.rect)
+         else:
+            surface.blit(self.image.jump.left.image, self.rect)
+
 
 class Goomba(Entity):
     def __init__(self):
@@ -197,24 +253,23 @@ class Goomba(Entity):
         else:
             self.x_speed = -self.speed
             self.rect.bottomleft = (W, 0)
-
     def update(self):
         super().update()
         if (self.x_speed > 0 and self.rect.left > W) or (self.x_speed < 0 and self.rect.right < 0):
             self.is_out = True
 
-
-player = Player(player_image)
+player = player_image
 score = 0
 pygame.mixer.init()
-kickSound = pygame.mixer.Sound("kick.wav")
-themeSong = pygame.mixer.Sound("theme.mp3")
+kickSound = pygame.mixer.Sound('kick.wav')
+themeSong = pygame.mixer.Sound('theme.mp3')
 
 goombas = []
 INIT_DELAY = 2000
 spawn_delay = INIT_DELAY
 DECREASE_BASE = 1.01
 last_spawn_time = pygame.time.get_ticks()
+ 
 
 running = True
 themeSong.play(1000)
@@ -234,8 +289,10 @@ while running:
     clock.tick(FPS)
 
     screen.fill((92, 148, 252))
-
     screen.blit(ground_image, (0, H - GROUND_H))
+
+    score_surface = font_large.render(str(score), True, (255, 255, 255))
+    score_rect = score_surface.get_rect()
 
     score_text = font_large.render(str(score), True, (255, 255, 255))
     score_rect = score_text.get_rect()
@@ -244,9 +301,9 @@ while running:
         score_rect.midbottom = (W // 2, H // 2)
 
         screen.blit(retry_text, retry_rect)
-    else:    
+    else:
         player.update()
-        player.draw(screen)
+        player.draw(self, surface)
 
         now = pygame.time.get_ticks()
         elapsed = now - last_spawn_time
@@ -260,20 +317,21 @@ while running:
             else:
                 goomba.update()
                 goomba.draw(screen)
- 
-            if not player.is_dead and not goomba.is_dead and player.rect.colliderect(goomba.rect):
-                if (player.rect.bottom - player.y_speed) < goomba.rect.top:
-                    goomba.kill()
-                    kickSound.play()
-                    player.jump()
-                    score += 1
-                    spawn_delay = INIT_DELAY / (DECREASE_BASE ** score)
-                else:
-                    player.kill()
 
-        score_rect.midtop = (W // 2, 5)
+                if not player.is_dead and not goomba.is_dead and player.rect.colliderect(goomba.rect):
+                    if (player.rect.bottom - player.y_speed) < goomba.rect.top:
+                        goomba.kill()
+                        kickSound.play()
+                        player.jump()
+                        score += 1
+                        spawn_delay = INIT_DELAY / (DECREASE_BASE ** score)
+                    else:
+                        player.kill()
 
-    screen.blit(score_text, score_rect)
+        
+            score_rect.midtop = (W // 2, 5)
+
+    screen.blit(score_surface, score_rect)
     pygame.display.flip()
-
 quit()
+
