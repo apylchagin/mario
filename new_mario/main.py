@@ -30,15 +30,11 @@ class MapProjectionBlock:
 
 class MapProjection:
     blocks = None
-
+    block = None
     def __init__(self, map, width, height):
-        self.__map = map
-        self.__width = width
-        self.__height = height
-        self.block = (width // map.width, height // map.height)
-
+        self.block = (width / map.width, height / map.height)
         self.blocks = []
-        for block in self.__map.blocks:
+        for block in map.blocks:
             self.blocks.append(MapProjectionBlock(self, block))
 
 levelMap = LevelMap()
