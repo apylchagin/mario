@@ -140,7 +140,7 @@ class LevelMap:
 
 if __name__ == '__main__':
       builder = LevelMap()
-      builder.loadFromFile("test.map")
+      builder.loadFromFile("level1.map")
       print("Map is %d x %d" % (builder.width, builder.height))
       for block in builder.blocks:
           print("-> block: %s" % (str(block)))
