@@ -372,7 +372,6 @@ while running:
         player.update()
         player.draw(screen)
 
-
         for goomba in list(goombas):
             if goomba.is_out:
                 goombas.remove(goomba)
