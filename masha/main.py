@@ -60,8 +60,8 @@ class SpriteFile:
         surface = pygame.transform.scale(surface, rect)
         return surface
 
-# Represents single sprite of the game, i.e. single
-# image.
+# Represents single sprite of the game,
+# i.e. single image.
 class Sprite:
     image = None
     def __init__(self, sprites, idx, scale):

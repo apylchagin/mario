@@ -5,7 +5,7 @@
 # dims as width and height
 class LevelBlock:
     # Block type identified
-    type = ' '
+    type = None
     x = 0
     y = 0
     width = 0
@@ -28,10 +28,19 @@ class LevelBlock:
 class LevelMap:
     width = 0
     height = 0
-    blocks = []
+    blocks = None
 
+    # Constructor
     def __init__(self):
         pass
+    
+    # Convert to string
+    def __str__(self):
+        __result = "{%dx%d:" % (self.width, self.height)
+        for block in self.blocks:
+            __result += "[%s]" % (str(block))
+        __result += "}"
+        return __result
 
     # Function build the map out of the text file
     def loadFromFile(self, path):
@@ -54,12 +63,18 @@ class LevelMap:
                 if __block[0] is None:
                     # Stop if no more blocks found
                     break
+                # Store the block into the list
+                # of found blocks
                 self.blocks.append(__block[0])
+                # Reassign the lines by the ones
+                # there the data for the just extracted
+                # block has removed
                 lines = __block[1]
             return True
         return False
 
     # Check that all lines have the same length
+    # and calculate the map sizes: width and height
     def __calculateMapSize(self, lines):
         __len = 0
         for line in lines:
@@ -125,7 +140,6 @@ class LevelMap:
                         break
                 if __block is None:
                     # Validation has failed
-                    print("Incorrect block")
                     break
                 # Count this line as valid
                 __block.height += 1
@@ -138,9 +152,10 @@ class LevelMap:
                 lines[idx] = lines[idx][:__block.x] + __wiper + lines[idx][__block.x + __block.width:]
         return __block, lines
 
+
 if __name__ == '__main__':
-      builder = LevelMap()
-      builder.loadFromFile("level1.map")
-      print("Map is %d x %d" % (builder.width, builder.height))
-      for block in builder.blocks:
+      map = LevelMap()
+      map.loadFromFile("level1.map")
+      print("Map is %d x %d" % (map.width, map.height))
+      for block in map.blocks:
           print("-> block: %s" % (str(block)))
