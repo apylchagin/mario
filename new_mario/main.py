@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pygame, random
-from datetime import datetime
+from enum import Enum
 from LevelMap import LevelMap
 from Static import StaticBackground, StaticScaledBackground
 from Animation import AnimatedBackground
@@ -12,13 +12,76 @@ pygame.mixer.init()
 
 W = 800
 H = 600
-GROUND_H = 80
 screen = pygame.display.set_mode((W, H))
 
 FPS = 60
 clock = pygame.time.Clock()
 running = True
 
+class MapProjectionBlockType(Enum):
+    GROUND = '='
+    PLAYER = 'p'
+    TREE = 't'
+    MISC = '\0'
+
+class MapProjectionBlock:
+    type = None
+    rect = None
+    def __init__(self, projection, mapBlock):
+        self.type = self.__mapType(mapBlock.type)
+        self.rect = pygame.Rect(mapBlock.x * projection.block[0],
+                                mapBlock.y * projection.block[1],
+                                mapBlock.width * projection.block[0],
+                                mapBlock.height * projection.block[1])
+    def __mapType(self, type):
+        if type == '=':
+            return MapProjectionBlockType.GROUND
+        if type == 'p':
+            return MapProjectionBlockType.PLAYER
+        if type == 't':
+            return MapProjectionBlockType.TREE
+        return MapProjectionBlockType.MISC
+
+    def sizes(self):
+        return (self.rect.width, self.rect.height)
+    def __str__(self):
+        return "[%s, %s]" % (self.type, self.rect)
+
+class MapProjection:
+    blocks = None
+    block = None
+    def __init__(self, map : LevelMap, width, height):
+        self.block = (width / map.width, height / map.height)
+        self.width = width
+        self.height = height
+        self.blocks = []
+        for block in map.blocks:
+            self.blocks.append(MapProjectionBlock(self, block))
+
+    def getBlock(self, type : MapProjectionBlockType) -> MapProjectionBlock:
+        for block in self.blocks:
+            if block.type == type:
+                return block
+        return None
+
+    # Provides the line which defines the nearest
+    # ground location based for the rect. The middlepoint
+    # of the bottom of the rectangle shows is used for
+    # the ground detection
+    def getGround(self, rect : pygame.Rect) -> pygame.Rect:
+        (__x, __y) = rect.midbottom
+        __yMinDist = self.height + 1
+        __result = None
+        # Select all blocks which are above
+        # the rectangle
+        for block in self.blocks:
+            if block.type == MapProjectionBlockType.GROUND:
+                if (__x >= block.rect.left) and (__x <= block.rect.right) and (__y <= block.rect.top):
+                    if (__yMinDist > (block.rect.top - __y)):
+                        __result = block.rect
+                        __yMinDist = block.rect.top - __y
+        return __result
+    
 # Base class for the playable characters like player and enemy
 class Entity:
     def __init__(self, image):
@@ -45,25 +108,25 @@ class Entity:
 
     # Updates the state of the entity based on the 
     # current speed on both axises
-    def update(self):
+    def update(self, map: MapProjection):
+        __ground = map.getGround(self.rect)
+
         self.rect.x += self.x_speed
-        if (self.rect.x < 0):
-            self.rect.x = 0
         self.y_speed += self.gravity
         self.rect.y += self.y_speed
 
         if not self.is_dead:
-            if self.rect.top > H - GROUND_H:
+            if self.rect.top > __ground.top:
                 self.is_out = True
             else:
                 self.handle_input()
 
-            if self.rect.bottom > H - GROUND_H:
+            if self.rect.bottom > __ground.top:
                 self.is_grounded = True
                 self.y_speed = 0
-                self.rect.bottom = H - GROUND_H
+                self.rect.bottom = __ground.top
         else:
-            if self.rect.top > H - GROUND_H:
+            if self.rect.top > __ground.top:
                 self.is_out = True
             else:
                 self.handle_input()
@@ -112,37 +175,14 @@ class Player(Entity):
     def respawn(self):
         self.is_out = False
         self.is_dead = False
-        self.rect.midbottom = (W // 2, H - GROUND_H)
+        self.rect.midbottom = (W // 2, H // 2)
 
     def jump(self):
         self.y_speed = self.jump_speed
         self.__jumpSound.play()
 
-class MapProjectionBlock:
-    type = None
-    rect = None
-    def __init__(self, projection, mapBlock):
-        self.type = mapBlock.type
-        self.rect = pygame.Rect(mapBlock.x * projection.block[0],
-                                mapBlock.y * projection.block[1],
-                                mapBlock.width * projection.block[0],
-                                mapBlock.height * projection.block[1])
-    def sizes(self):
-        return (self.rect.width, self.rect.height)
 
-class MapProjection:
-    blocks = None
-    block = None
-    def __init__(self, map, width, height):
-        self.block = (width / map.width, height / map.height)
-        self.blocks = []
-        for block in map.blocks:
-            self.blocks.append(MapProjectionBlock(self, block))
-    def getBlock(self, type):
-        for block in self.blocks:
-            if block.type == type:
-                return block
-        return None
+
 
 levelMap = LevelMap()
 levelMap.loadFromFile("level1.map")
@@ -153,7 +193,7 @@ backgroundElements = []
 
 # Defines full set of movement related sprites for the player
 # character
-player_block = projectMap.getBlock('p')
+player_block = projectMap.getBlock(MapProjectionBlockType.PLAYER)
 player_image = SpriteMoves(
     SpriteDirection(
         Sprite('images/Girl.stay.left.png', player_block.sizes()),
@@ -173,12 +213,12 @@ player = Player(player_image)
 
 # Load blocks content per type
 for bgBlock in projectMap.blocks:
-    if bgBlock.type == 't':
+    if bgBlock.type == MapProjectionBlockType.TREE:
         backgroundElements.append(
             StaticScaledBackground(bgBlock.rect,
                                    pygame.image.load('images/tree.png'))
         )
-    elif bgBlock.type == '=':
+    elif bgBlock.type == MapProjectionBlockType.GROUND:
         backgroundElements.append(
             StaticScaledBackground(bgBlock.rect,
                                    pygame.image.load('images/ground.png'))
@@ -214,6 +254,6 @@ while running:
     screen.fill((92, 148, 252))
     for element in backgroundElements:
         element.draw(screen)
-    player.update()
+    player.update(projectMap)
     player.draw(screen)
     pygame.display.flip()
