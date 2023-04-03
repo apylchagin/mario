@@ -154,7 +154,7 @@ class Entity:
                 self.y_speed = 0
                 self.rect.bottom = __ground.top
         else:
-            if self.rect.top > __ground.top:
+            if self.rect.top > H:
                 self.is_out = True
             else:
                 self.handle_input()
