@@ -22,12 +22,12 @@ TEXT_COL = (255, 255, 255)
 
 
 
-options_img = pygame.image.load("images/button_options.png").convert_alpha()
-quit_img = pygame.image.load("images/button_quit.png").convert_alpha()
-video_img = pygame.image.load('images/button_video.png').convert_alpha()
-audio_img = pygame.image.load('images/button_audio.png').convert_alpha()
-keys_img = pygame.image.load('images/button_keys.png').convert_alpha()
-back_img = pygame.image.load('images/button_back.png').convert_alpha()
+options_img = pygame.image.load("button_options.png").convert_alpha()
+quit_img = pygame.image.load("button_quit.png").convert_alpha()
+video_img = pygame.image.load('button_video.png').convert_alpha()
+audio_img = pygame.image.load('button_audio.png').convert_alpha()
+keys_img = pygame.image.load('button_keys.png').convert_alpha()
+back_img = pygame.image.load('button_back.png').convert_alpha()
 
 
 
@@ -62,9 +62,9 @@ while run:
     if menu_state == "options":
       
       if video_button.draw(screen):
-        print("Video Settings")
+        charType = 'Girl'
       if audio_button.draw(screen):
-        print("Audio Settings")
+        charType = 'Boy'
       if keys_button.draw(screen):
         print("Change Key Bindings")
       if back_button.draw(screen):
