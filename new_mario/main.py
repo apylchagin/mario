@@ -98,7 +98,7 @@ class MapProjection:
         if __result is None:
             __result = pygame.Rect(0, 0, 0, 0)
         return __result
-    
+
 # Base class for the playable characters like player and enemy
 class Entity:
     def __init__(self, image):
@@ -123,7 +123,7 @@ class Entity:
         self.y_speed = self.jump_speed
         self.look_right = self.x_speed > 0
 
-    # Updates the state of the entity based on the 
+    # Updates the state of the entity based on the
     # current speed on both axises
     def update(self, map: MapProjection):
         __ground = map.getGround(self.rect)
@@ -214,17 +214,12 @@ class Goomba(Entity):
             self.x_speed = -self.speed
             self.rect.bottomleft = (W, 0)
 
-    # Updates the state of the entity based on the 
+    # Updates the state of the entity based on the
     # current speed on both axises
     def update(self, map: MapProjection):
         super().update(map)
         if (self.x_speed > 0 and self.rect.left > W) or (self.x_speed < 0 and self.rect.right < 0):
             self.is_out = True
-
-levelName = "level1.map"
-levelMap = LevelMap()
-levelMap.loadFromFile(levelName)
-projectMap = MapProjection(levelMap, W, H)
 
 backgroundElements = []
 
@@ -238,37 +233,6 @@ enemy_image = SpriteMoves(
     Sprite('images/deadngoomba.png', (60, 60))
 )
 
-# Load blocks content per type
-for bgBlock in projectMap.blocks:
-    if bgBlock.type == MapProjectionBlockType.TREE:
-        backgroundElements.append(
-            StaticScaledBackground(bgBlock.rect,
-                                   pygame.image.load('images/tree.png'))
-        )
-    elif bgBlock.type == MapProjectionBlockType.GROUND:
-        backgroundElements.append(
-            StaticScaledBackground(bgBlock.rect,
-                                   pygame.image.load('images/ground.png'))
-        )
-    elif bgBlock.type == MapProjectionBlockType.IN_SKY_GOOMBA:
-        inSky = AnimatedBackground(
-            bgBlock.rect,
-            SpriteFile('images/inSkyGoomba.png', 11, 1), 200)
-        backgroundElements.append(inSky)
-    elif bgBlock.type == MapProjectionBlockType.CLOUD_LEFT:
-        cloudsLeft = AnimatedBackground(bgBlock.rect,
-            [pygame.image.load('images/1Clouds.png'),
-             pygame.image.load('images/2Clouds.png'),
-             pygame.image.load('images/3Clouds.png')],
-            200)
-        backgroundElements.append(cloudsLeft)
-    elif bgBlock.type == MapProjectionBlockType.CLOUD_RIGHT:
-        cloudsRight = AnimatedBackground(bgBlock.rect,
-            [pygame.image.load('images/2Clouds.png'),
-             pygame.image.load('images/3Clouds.png'),
-             pygame.image.load('images/1Clouds.png')],
-            200)
-        backgroundElements.append(cloudsRight)
 
 class Score:
     value = 0
@@ -314,6 +278,7 @@ DECREASE_BASE = 1.01
 class GameConfig:
     def __init__(self):
         self.player = 'Girl'
+        self.level = 1 # Possible values: 1, 2, 3
 
 class Game:
     def __init__(self, config: GameConfig):
@@ -330,12 +295,57 @@ class Game:
         self.retry_rect = self.retry_text.get_rect()
         self.retry_rect = (W // 2 - self.retry_rect.width // 2, H // 2 + 10)
 
-        self.__createPlayer(config)
 
         self.kickSound = pygame.mixer.Sound("sounds/kick.wav")
         self.themeSong = pygame.mixer.Sound("sounds/theme.mp3")
         self.themeSong.play(1000)
-        
+
+        levelName = "level1.map"
+        if config.level == 2:
+            levelName = "level2.map"
+        elif config.level == 3:
+            levelName = "level3.map"
+
+        levelMap = LevelMap()
+        levelMap.loadFromFile(levelName)
+        self.projectMap = MapProjection(levelMap, W, H)
+        self.load_blocks()
+
+        self.__createPlayer(config)
+
+    def load_blocks(self):
+        # Load blocks content per type
+        for bgBlock in self.projectMap.blocks:
+            if bgBlock.type == MapProjectionBlockType.TREE:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/tree.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.GROUND:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/ground.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.IN_SKY_GOOMBA:
+                inSky = AnimatedBackground(
+                    bgBlock.rect,
+                    SpriteFile('images/inSkyGoomba.png', 11, 1), 200)
+                backgroundElements.append(inSky)
+            elif bgBlock.type == MapProjectionBlockType.CLOUD_LEFT:
+                cloudsLeft = AnimatedBackground(bgBlock.rect,
+                                                [pygame.image.load('images/1Clouds.png'),
+                                                 pygame.image.load('images/2Clouds.png'),
+                                                 pygame.image.load('images/3Clouds.png')],
+                                                200)
+                backgroundElements.append(cloudsLeft)
+            elif bgBlock.type == MapProjectionBlockType.CLOUD_RIGHT:
+                cloudsRight = AnimatedBackground(bgBlock.rect,
+                                                 [pygame.image.load('images/2Clouds.png'),
+                                                  pygame.image.load('images/3Clouds.png'),
+                                                  pygame.image.load('images/1Clouds.png')],
+                                                 200)
+                backgroundElements.append(cloudsRight)
+
     def process(self, screen : pygame.Surface):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -374,14 +384,14 @@ class Game:
                 self.last_spawn_time = now
                 self.goombas.append(Goomba())
 
-            self.player.update(projectMap)
+            self.player.update(self.projectMap)
             self.player.draw(screen)
 
             for goomba in list(self.goombas):
                 if goomba.is_out:
                     self.goombas.remove(goomba)
                 else:
-                    goomba.update(projectMap)
+                    goomba.update(self.projectMap)
                     goomba.draw(screen)
 
                 if not self.player.is_dead and not goomba.is_dead and self.player.rect.colliderect(goomba.rect):
@@ -400,7 +410,7 @@ class Game:
     def __createPlayer(self, config : GameConfig):
         # Defines full set of movement related sprites for the player
         # character
-        self.player_block = projectMap.getBlock(MapProjectionBlockType.PLAYER)
+        self.player_block = self.projectMap.getBlock(MapProjectionBlockType.PLAYER)
         self.player_image = SpriteMoves(
             SpriteDirection(
                 Sprite('images/' + config.player + '.stay.left.png', self.player_block.sizes()),
@@ -429,7 +439,7 @@ class Menu:
         self.config = GameConfig()
         self.running = True
         self.level = self.LEVEL_ROOT
-        
+
         self.play_img = pygame.image.load("images/button_play.png").convert_alpha()
         self.options_img = pygame.image.load("images/button_options.png").convert_alpha()
         self.quit_img = pygame.image.load("images/button_quit.png").convert_alpha()
@@ -439,6 +449,7 @@ class Menu:
         self.back_img = pygame.image.load('images/button_back.png').convert_alpha()
         self.girl_img = pygame.image.load('images/Girl.png').convert_alpha()
         self.boy_img = pygame.image.load('images/Boy.png').convert_alpha()
+        self.game_level_1 = pygame.image.load('images/button_level_1.png').convert_alpha()
 
         self.play_button = button.Button(336, 125, self.play_img, 1)
         self.options_button = button.Button(297, 250, self.options_img, 1)
@@ -449,13 +460,16 @@ class Menu:
         self.back_button = button.Button(332, 450, self.back_img, 1)
         self.boy_button = button.Button(100, 100, self.boy_img, 5)
         self.girl_button = button.Button(400, 100, self.girl_img, 5)
+        self.game_level_button_1 = button.Button(300, 100, self.game_level_1, 1)
+        self.game_level_button_2 = button.Button(300, 200, self.game_level_1, 1)
 
     def process(self, screen : pygame.Surface):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 self.running = False
 
-        screen.fill((238, 18, 137))
+        ##screen.fill((238, 18, 137))
+        screen.fill((0, 244, 0))
         if self.level == self.LEVEL_ROOT:
             if self.play_button.draw(screen):
                 self.level = self.LEVEL_PLAY
@@ -473,10 +487,22 @@ class Menu:
         elif self.level == self.LEVEL_CHAR:
             if self.boy_button.draw(screen):
                 self.config.player = 'Boy'
+                print("CHAR -> " + str(self.config.player))
             if self.girl_button.draw(screen):
                 self.config.player = 'Girl'
+                print("CHAR -> " + str(self.config.player))
             if self.back_button.draw(screen):
                 self.level = self.LEVEL_ROOT
+        elif self.level == self.LEVEL_LEVEL:
+            if self.back_button.draw(screen):
+                self.level = self.LEVEL_ROOT
+            if self.game_level_button_1.draw(screen):
+                self.config.level = 1
+                print("Level -> " + str(self.config.level))
+            if self.game_level_button_2.draw(screen):
+                self.config.level = 2
+                print("Level -> " + str(self.config.level))
+
         return self.running
 
 menu = Menu()
