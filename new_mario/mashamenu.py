@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
+
 import pygame
 import button
 
 pygame.init()
-
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -22,12 +23,12 @@ TEXT_COL = (255, 255, 255)
 
 
 
-options_img = pygame.image.load("button_options.png").convert_alpha()
-quit_img = pygame.image.load("button_quit.png").convert_alpha()
-video_img = pygame.image.load('button_video.png').convert_alpha()
-audio_img = pygame.image.load('button_audio.png').convert_alpha()
-keys_img = pygame.image.load('button_keys.png').convert_alpha()
-back_img = pygame.image.load('button_back.png').convert_alpha()
+options_img = pygame.image.load("images/button_options.png").convert_alpha()
+quit_img = pygame.image.load("images/button_quit.png").convert_alpha()
+video_img = pygame.image.load('images/button_video.png').convert_alpha()
+audio_img = pygame.image.load('images/button_audio.png').convert_alpha()
+keys_img = pygame.image.load('images/button_keys.png').convert_alpha()
+back_img = pygame.image.load('images/button_back.png').convert_alpha()
 
 
 

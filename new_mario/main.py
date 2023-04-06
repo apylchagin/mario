@@ -4,6 +4,7 @@ import pygame, random
 from datetime import datetime
 from enum import Enum
 from LevelMap import LevelMap
+import button
 from Static import StaticBackground, StaticScaledBackground
 from Animation import AnimatedBackground
 from Sprites import SpriteFile, SpriteMoves, SpriteDirection, Sprite
@@ -22,18 +23,6 @@ running = True
 font_path = 'fonts/mario_font.ttf'
 font_large = pygame.font.SysFont(font_path, 48)
 font_small = pygame.font.SysFont(font_path, 36)
-
-game_over = False
-game_over_text = font_large.render('Game Over', True, (255, 255, 255))
-game_over_rect = game_over_text.get_rect()
-game_over_rect = (W // 2 - game_over_rect.width // 2, H // 2 - 100)
-
-retry_text = font_small.render('Press any key to continue', True, (255, 255, 255))
-retry_rect = retry_text.get_rect()
-retry_rect = (W // 2 - retry_rect.width // 2, H // 2 + 10)
-
-kickSound = pygame.mixer.Sound("sounds/kick.wav")
-themeSong = pygame.mixer.Sound("sounds/theme.mp3")
 
 class MapProjectionBlockType(Enum):
     GROUND = '='
@@ -138,7 +127,6 @@ class Entity:
     # current speed on both axises
     def update(self, map: MapProjection):
         __ground = map.getGround(self.rect)
-
         self.rect.x += self.x_speed
         self.y_speed += self.gravity
         self.rect.y += self.y_speed
@@ -236,30 +224,10 @@ class Goomba(Entity):
 levelName = "level1.map"
 levelMap = LevelMap()
 levelMap.loadFromFile(levelName)
-print('Map %s' % str(levelMap))
 projectMap = MapProjection(levelMap, W, H)
 
 backgroundElements = []
 
-# Defines full set of movement related sprites for the player
-# character
-player_block = projectMap.getBlock(MapProjectionBlockType.PLAYER)
-player_image = SpriteMoves(
-    SpriteDirection(
-        Sprite('images/Girl.stay.left.png', player_block.sizes()),
-        Sprite('images/Girl.stay.right.png', player_block.sizes())
-    ),
-    SpriteDirection(
-        Sprite('images/Girl.jump.left.png', player_block.sizes()),
-        Sprite('images/Girl.jump.right.png', player_block.sizes())
-    ),
-    SpriteDirection(
-        Sprite('images/Girl.left.png', player_block.sizes()),
-        Sprite('images/Girl.right.png', player_block.sizes())
-    ),
-    Sprite('images/Girl.dead.png', player_block.sizes())
-)
-player = Player(player_image)
 
 # Defines full set of movement related sprites for the enemy
 # character
@@ -302,20 +270,6 @@ for bgBlock in projectMap.blocks:
             200)
         backgroundElements.append(cloudsRight)
 
-class DebugDrawings:
-    enabled = False
-    def __init__(self, alevelMap : LevelMap, aprojectionMap : MapProjection):
-        self.levelMap = alevelMap
-        self.projectionMap = aprojectionMap
-
-    def draw(self, surface : pygame.Surface):
-        if not self.enabled:
-            return
-        for block in self.projectionMap.blocks:
-            pygame.draw.rect(surface, (255, 0 ,0), block.rect, 2)
-    
-debug = DebugDrawings(levelMap, projectMap)
-
 class Score:
     value = 0
     def __init__(self, location):
@@ -353,84 +307,190 @@ class Timer:
 
 timer = Timer((W // 5, 20))
 
-goombas = []
 
 INIT_DELAY = 2000
-spawn_delay = INIT_DELAY
 DECREASE_BASE = 1.01
-last_spawn_time = pygame.time.get_ticks()
-frames=0
-themeSong.play(1000)
+
+class GameConfig:
+    def __init__(self):
+        self.player = 'Girl'
+
+class Game:
+    def __init__(self, config: GameConfig):
+        self.last_spawn_time = pygame.time.get_ticks()
+        self.spawn_delay = INIT_DELAY
+        self.goombas = []
+        self.running = True
+        self.game_over = False
+        self.game_over_text = font_large.render('Game Over', True, (255, 255, 255))
+        self.game_over_rect = self.game_over_text.get_rect()
+        self.game_over_rect = (W // 2 - self.game_over_rect.width // 2, H // 2 - 100)
+
+        self.retry_text = font_small.render('Press any key to continue', True, (255, 255, 255))
+        self.retry_rect = self.retry_text.get_rect()
+        self.retry_rect = (W // 2 - self.retry_rect.width // 2, H // 2 + 10)
+
+        self.__createPlayer(config)
+
+        self.kickSound = pygame.mixer.Sound("sounds/kick.wav")
+        self.themeSong = pygame.mixer.Sound("sounds/theme.mp3")
+        self.themeSong.play(1000)
+        
+    def process(self, screen : pygame.Surface):
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                self.running = False
+            elif e.type == pygame.KEYDOWN:
+                if self.player.is_dead:
+                    score.reset()
+                    timer.reset()
+                    self.spawn_delay = INIT_DELAY
+                    self.last_spawn_time = pygame.time.get_ticks()
+                    self.player.respawn()
+                    self.goombas.clear()
+
+        if self.player.is_dead:
+            screen.fill((0, 0, 45))
+        elif score.value == 0 or (int(score.value / 3) % 2) == 0:
+            screen.fill((92, 148, 252))
+        else:
+            screen.fill((0, 0, 230))
+
+        for element in backgroundElements:
+            element.draw(screen)
+        score.draw(screen)
+        if not self.player.is_dead:
+            timer.draw(screen)
+
+        if self.player.is_out:
+            score.moveTo((W // 2, H // 2 - 45))
+            screen.blit(self.game_over_text, self.game_over_rect)
+            screen.blit(self.retry_text, self.retry_rect)
+        else:
+            now = pygame.time.get_ticks()
+            elapsed = now - self.last_spawn_time
+
+            if elapsed > self.spawn_delay:
+                self.last_spawn_time = now
+                self.goombas.append(Goomba())
+
+            self.player.update(projectMap)
+            self.player.draw(screen)
+
+            for goomba in list(self.goombas):
+                if goomba.is_out:
+                    self.goombas.remove(goomba)
+                else:
+                    goomba.update(projectMap)
+                    goomba.draw(screen)
+
+                if not self.player.is_dead and not goomba.is_dead and self.player.rect.colliderect(goomba.rect):
+                    if (self.player.rect.bottom - self.player.y_speed) < goomba.rect.top:
+                        goomba.kill()
+                        self.kickSound.play()
+                        self.player.jump()
+                        score.inc()
+                        self.spawn_delay = INIT_DELAY / (DECREASE_BASE ** score.value)
+                    else:
+                        self.player.kill()
+
+            score.moveTo((W // 2, 10))
+        return self.running
+
+    def __createPlayer(self, config : GameConfig):
+        # Defines full set of movement related sprites for the player
+        # character
+        self.player_block = projectMap.getBlock(MapProjectionBlockType.PLAYER)
+        self.player_image = SpriteMoves(
+            SpriteDirection(
+                Sprite('images/' + config.player + '.stay.left.png', self.player_block.sizes()),
+                Sprite('images/' + config.player + '.stay.right.png', self.player_block.sizes())
+            ),
+            SpriteDirection(
+                Sprite('images/' + config.player + '.jump.left.png', self.player_block.sizes()),
+                Sprite('images/' + config.player + '.jump.right.png', self.player_block.sizes())
+            ),
+            SpriteDirection(
+                Sprite('images/' + config.player + '.left.png', self.player_block.sizes()),
+                Sprite('images/' + config.player + '.right.png', self.player_block.sizes())
+            ),
+            Sprite('images/' + config.player + '.dead.png', self.player_block.sizes())
+        )
+        self.player = Player(self.player_image)
+
+class Menu:
+    LEVEL_PLAY = -1
+    LEVEL_ROOT = 0
+    LEVEL_OPTIONS = 1
+    LEVEL_CHAR = 2
+    LEVEL_LEVEL = 3
+
+    def __init__(self):
+        self.config = GameConfig()
+        self.running = True
+        self.level = self.LEVEL_ROOT
+        
+        self.play_img = pygame.image.load("images/button_play.png").convert_alpha()
+        self.options_img = pygame.image.load("images/button_options.png").convert_alpha()
+        self.quit_img = pygame.image.load("images/button_quit.png").convert_alpha()
+        self.char_img = pygame.image.load('images/button_character.png').convert_alpha()
+        self.level_img = pygame.image.load('images/button_level.png').convert_alpha()
+        self.keys_img = pygame.image.load('images/button_keys.png').convert_alpha()
+        self.back_img = pygame.image.load('images/button_back.png').convert_alpha()
+        self.girl_img = pygame.image.load('images/Girl.png').convert_alpha()
+        self.boy_img = pygame.image.load('images/Boy.png').convert_alpha()
+
+        self.play_button = button.Button(336, 125, self.play_img, 1)
+        self.options_button = button.Button(297, 250, self.options_img, 1)
+        self.quit_button = button.Button(336, 375, self.quit_img, 1)
+        self.char_button = button.Button(226, 75, self.char_img, 1)
+        self.level_button = button.Button(225, 200, self.level_img, 1)
+        self.keys_button = button.Button(246, 325, self.keys_img, 1)
+        self.back_button = button.Button(332, 450, self.back_img, 1)
+        self.boy_button = button.Button(100, 100, self.boy_img, 5)
+        self.girl_button = button.Button(400, 100, self.girl_img, 5)
+
+    def process(self, screen : pygame.Surface):
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                self.running = False
+
+        screen.fill((238, 18, 137))
+        if self.level == self.LEVEL_ROOT:
+            if self.play_button.draw(screen):
+                self.level = self.LEVEL_PLAY
+            if self.options_button.draw(screen):
+                self.level = self.LEVEL_OPTIONS
+            if self.quit_button.draw(screen):
+                self.running = False
+        elif self.level == self.LEVEL_OPTIONS:
+            if self.char_button.draw(screen):
+                self.level = self.LEVEL_CHAR
+            if self.level_button.draw(screen):
+                self.level = self.LEVEL_LEVEL
+            if self.back_button.draw(screen):
+                self.level = self.LEVEL_ROOT
+        elif self.level == self.LEVEL_CHAR:
+            if self.boy_button.draw(screen):
+                self.config.player = 'Boy'
+            if self.girl_button.draw(screen):
+                self.config.player = 'Girl'
+            if self.back_button.draw(screen):
+                self.level = self.LEVEL_ROOT
+        return self.running
+
+menu = Menu()
+game = None
 
 # Main drawing loop. Every iteration means drawing of
 # the single frame of the game
 while running:
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
-            running = False
-        elif e.type == pygame.KEYDOWN:
-            if player.is_dead:
-                score.reset()
-                timer.reset()
-                spawn_delay = INIT_DELAY
-                last_spawn_time = pygame.time.get_ticks()
-                player.respawn()
-                goombas.clear()
-
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_m]:
-        debug.enabled = not debug.enabled
-
     clock.tick(FPS)
-
-    frames = frames + 1
-
-    if player.is_dead:
-        screen.fill((0, 0, 45))
-    elif score.value == 0 or (int(score.value / 3) % 2) == 0:
-        screen.fill((92, 148, 252))
+    if game == None:
+        running = menu.process(screen)
+        if running and menu.level == menu.LEVEL_PLAY:
+            game = Game(menu.config)
     else:
-        screen.fill((0, 0, 230))
-
-    for element in backgroundElements:
-        element.draw(screen)
-    score.draw(screen)
-    if not player.is_dead:
-        timer.draw(screen)
-
-    if player.is_out:
-        score.moveTo((W // 2, H // 2 - 45))
-        screen.blit(game_over_text, game_over_rect)
-        screen.blit(retry_text, retry_rect)
-    else:
-        now = pygame.time.get_ticks()
-        elapsed = now - last_spawn_time
-
-        if elapsed > spawn_delay:
-            last_spawn_time = now
-            goombas.append(Goomba())
-
-        player.update(projectMap)
-        player.draw(screen)
-
-        for goomba in list(goombas):
-            if goomba.is_out:
-                goombas.remove(goomba)
-            else:
-                goomba.update(projectMap)
-                goomba.draw(screen)
-
-            if not player.is_dead and not goomba.is_dead and player.rect.colliderect(goomba.rect):
-                if (player.rect.bottom - player.y_speed) < goomba.rect.top:
-                    goomba.kill()
-                    kickSound.play()
-                    player.jump()
-                    score.inc()
-                    spawn_delay = INIT_DELAY / (DECREASE_BASE ** score.value)
-                else:
-                    player.kill()
-
-        score.moveTo((W // 2, 10))
-
-    debug.draw(screen)
+        running = game.process(screen)
+    pygame.display.update()
     pygame.display.flip()
