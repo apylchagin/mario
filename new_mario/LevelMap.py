@@ -24,7 +24,7 @@ class LevelBlock:
         return "(%c [%d, %d] %dx%d)" % (self.type, self.x, self.y, self.width, self.height)
 
 # This class describes the level map. Every block on map
-# represents by the LevelBlock with type and location. 
+# represents by the LevelBlock with type and location.
 class LevelMap:
     width = 0
     height = 0
@@ -33,7 +33,7 @@ class LevelMap:
     # Constructor
     def __init__(self):
         pass
-    
+
     # Convert to string
     def __str__(self):
         __result = "{%dx%d:" % (self.width, self.height)
@@ -85,14 +85,14 @@ class LevelMap:
         self.width = __len
         self.height = len(lines)
         return True
-    
+
     # Remove line endings
     def __chompLines(self, lines):
         __result = []
         for line in lines:
             __result.append(line.rstrip("\n\r\t"))
         return __result
-    
+
     # Finds the next rectangular block. Return the pair
     # of the LevelBlock instance and new updated lines
     # where the block related data has removed.
@@ -121,7 +121,7 @@ class LevelMap:
                     break
             if __block is not None:
                 break
-        
+
         # if there is a block we found need to check it.
         if __block is not None:
             # Try to extract the block from the __block.x/y point and
@@ -164,13 +164,6 @@ if __name__ == '__main__':
 if __name__ == '__main__':
       map = LevelMap()
       map.loadFromFile("level2.map")
-      print("Map is %d x %d" % (map.width, map.height))
-      for block in map.blocks:
-          print("-> block: %s" % (str(block)))
-
-if __name__ == '__main__':
-      map = LevelMap()
-      map.loadFromFile("level3.map")
       print("Map is %d x %d" % (map.width, map.height))
       for block in map.blocks:
           print("-> block: %s" % (str(block)))

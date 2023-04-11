@@ -301,11 +301,11 @@ class Game:
         self.themeSong.play(1000)
 
         if config.level == 1:
-            levelName = "level1.map"
+            levelName = "level1.map.txt"
         elif config.level == 2:
-            levelName = "level2.map"
+            levelName = "level2.map.txt"
         elif config.level == 3:
-            levelName = "level3.map"
+            levelName = "level3.map.txt"
 
         levelMap = LevelMap()
         levelMap.loadFromFile(levelName)
@@ -450,9 +450,10 @@ class Menu:
         self.back_img = pygame.image.load('images/button_back.png').convert_alpha()
         self.girl_img = pygame.image.load('images/Girl.png').convert_alpha()
         self.boy_img = pygame.image.load('images/Boy.png').convert_alpha()
-        self.game_level_1 = pygame.image.load('images/Level1_button.png').convert_alpha()
-        self.game_level_2 = pygame.image.load('images/Level2_button.png').convert_alpha()
-        self.game_level_3 = pygame.image.load('images/Level3_button.png').convert_alpha()
+        self.game_level_1 = pygame.image.load('Level1_button.png').convert_alpha()
+        self.game_level_2 = pygame.image.load('Level2_button.png').convert_alpha()
+        self.game_level_3 = pygame.image.load('Level3_button.png').convert_alpha()
+
 
         self.play_button = button.Button(336, 125, self.play_img, 1)
         self.options_button = button.Button(297, 250, self.options_img, 1)
