@@ -1,4 +1,0 @@
-10282  python3 -m venv venv
-10283  source venv/bin/activate
-10284  python3 main.py
-10285  pip install pygame
