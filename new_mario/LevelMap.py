@@ -159,3 +159,18 @@ if __name__ == '__main__':
       print("Map is %d x %d" % (map.width, map.height))
       for block in map.blocks:
           print("-> block: %s" % (str(block)))
+
+#levelmap 2,3
+if __name__ == '__main__':
+      map = LevelMap()
+      map.loadFromFile("level2.map")
+      print("Map is %d x %d" % (map.width, map.height))
+      for block in map.blocks:
+          print("-> block: %s" % (str(block)))
+
+if __name__ == '__main__':
+      map = LevelMap()
+      map.loadFromFile("level3.map")
+      print("Map is %d x %d" % (map.width, map.height))
+      for block in map.blocks:
+          print("-> block: %s" % (str(block)))

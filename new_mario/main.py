@@ -300,8 +300,9 @@ class Game:
         self.themeSong = pygame.mixer.Sound("sounds/theme.mp3")
         self.themeSong.play(1000)
 
-        levelName = "level1.map"
-        if config.level == 2:
+        if config.level == 1:
+            levelName = "level1.map"
+        elif config.level == 2:
             levelName = "level2.map"
         elif config.level == 3:
             levelName = "level3.map"
@@ -449,7 +450,9 @@ class Menu:
         self.back_img = pygame.image.load('images/button_back.png').convert_alpha()
         self.girl_img = pygame.image.load('images/Girl.png').convert_alpha()
         self.boy_img = pygame.image.load('images/Boy.png').convert_alpha()
-        self.game_level_1 = pygame.image.load('images/button_level_1.png').convert_alpha()
+        self.game_level_1 = pygame.image.load('images/Level1_button.png').convert_alpha()
+        self.game_level_2 = pygame.image.load('images/Level2_button.png').convert_alpha()
+        self.game_level_3 = pygame.image.load('images/Level3_button.png').convert_alpha()
 
         self.play_button = button.Button(336, 125, self.play_img, 1)
         self.options_button = button.Button(297, 250, self.options_img, 1)
@@ -460,8 +463,9 @@ class Menu:
         self.back_button = button.Button(332, 450, self.back_img, 1)
         self.boy_button = button.Button(100, 100, self.boy_img, 5)
         self.girl_button = button.Button(400, 100, self.girl_img, 5)
-        self.game_level_button_1 = button.Button(300, 100, self.game_level_1, 1)
-        self.game_level_button_2 = button.Button(300, 200, self.game_level_1, 1)
+        self.game_level_button_1 = button.Button(200, 100, self.game_level_1, 1)
+        self.game_level_button_2 = button.Button(200, 200, self.game_level_2, 1)
+        self.game_level_button_3 = button.Button(200, 300, self.game_level_3, 1)
 
     def process(self, screen : pygame.Surface):
         for e in pygame.event.get():
@@ -501,6 +505,9 @@ class Menu:
                 print("Level -> " + str(self.config.level))
             if self.game_level_button_2.draw(screen):
                 self.config.level = 2
+                print("Level -> " + str(self.config.level))
+            if self.game_level_button_3.draw(screen):
+                self.config.level = 3
                 print("Level -> " + str(self.config.level))
 
         return self.running
