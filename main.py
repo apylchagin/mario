@@ -32,6 +32,8 @@ class MapProjectionBlockType(Enum):
     CLOUD_RIGHT = 'C'
     CLOUD_LEFT = 'c'
     IN_SKY_GOOMBA = '+'
+    FLOWERS = 'f'
+    NEW_GROUND = 'n'
 
 class MapProjectionBlock:
     type = None
@@ -53,6 +55,10 @@ class MapProjectionBlock:
             return MapProjectionBlockType.TREE
         if type == 'C':
             return MapProjectionBlockType.CLOUD_RIGHT
+        if type == 'f':
+            return MapProjectionBlockType.FLOWERS
+        if type == 'n':
+            return MapProjectionBlockType.NEW_GROUND
         if type == 'c':
             return MapProjectionBlockType.CLOUD_LEFT
         return MapProjectionBlockType.MISC
@@ -323,10 +329,20 @@ class Game:
                     StaticScaledBackground(bgBlock.rect,
                                            pygame.image.load('images/tree.png'))
                 )
+            elif bgBlock.type == MapProjectionBlockType.FLOWERS:
+                 backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/flowers.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.NEW_GROUND:
+                 backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/newground.png'))
+                )     
             elif bgBlock.type == MapProjectionBlockType.GROUND:
                 backgroundElements.append(
-                    StaticScaledBackground(bgBlock.rect,
-                                           pygame.image.load('images/ground.png'))
+                   StaticScaledBackground(bgBlock.rect,
+                                          pygame.image.load('images/newground.png'))
                 )
             elif bgBlock.type == MapProjectionBlockType.IN_SKY_GOOMBA:
                 inSky = AnimatedBackground(
@@ -465,9 +481,9 @@ class Menu:
         self.back_button = button.Button(332, 450, self.back_img, 1)
         self.boy_button = button.Button(100, 100, self.boy_img, 5)
         self.girl_button = button.Button(400, 100, self.girl_img, 5)
-        self.game_level_button_1 = button.Button(200, 100, self.game_level_1, 1)
-        self.game_level_button_2 = button.Button(200, 200, self.game_level_2, 1)
-        self.game_level_button_3 = button.Button(200, 300, self.game_level_3, 1)
+        self.game_level_button_1 = button.Button(230, 100, self.game_level_1, 1)
+        self.game_level_button_2 = button.Button(230, 200, self.game_level_2, 1)
+        self.game_level_button_3 = button.Button(230, 300, self.game_level_3, 1)
 
     def process(self, screen : pygame.Surface):
         for e in pygame.event.get():
