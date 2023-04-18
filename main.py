@@ -34,6 +34,8 @@ class MapProjectionBlockType(Enum):
     IN_SKY_GOOMBA = '+'
     FLOWERS = 'f'
     NEW_GROUND = 'n'
+    BLACK_GROUND = 'b'
+    HOUSE = 'h'
 
 class MapProjectionBlock:
     type = None
@@ -59,6 +61,10 @@ class MapProjectionBlock:
             return MapProjectionBlockType.FLOWERS
         if type == 'n':
             return MapProjectionBlockType.NEW_GROUND
+        if type == 'b':
+            return MapProjectionBlockType.BLACK_GROUND
+        if type == 'h':
+            return MapProjectionBlockType.HOUSE
         if type == 'c':
             return MapProjectionBlockType.CLOUD_LEFT
         return MapProjectionBlockType.MISC
@@ -330,19 +336,30 @@ class Game:
                                            pygame.image.load('images/tree.png'))
                 )
             elif bgBlock.type == MapProjectionBlockType.FLOWERS:
-                 backgroundElements.append(
+                backgroundElements.append(
                     StaticScaledBackground(bgBlock.rect,
                                            pygame.image.load('images/flowers.png'))
                 )
+            elif bgBlock.type == MapProjectionBlockType.HOUSE:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/house.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.BLACK_GROUND:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/bground.png'))
+                )     
+        
             elif bgBlock.type == MapProjectionBlockType.NEW_GROUND:
-                 backgroundElements.append(
+                backgroundElements.append(
                     StaticScaledBackground(bgBlock.rect,
                                            pygame.image.load('images/newground.png'))
                 )     
             elif bgBlock.type == MapProjectionBlockType.GROUND:
                 backgroundElements.append(
                    StaticScaledBackground(bgBlock.rect,
-                                          pygame.image.load('images/newground.png'))
+                                          pygame.image.load('images/ground.png'))
                 )
             elif bgBlock.type == MapProjectionBlockType.IN_SKY_GOOMBA:
                 inSky = AnimatedBackground(
@@ -354,14 +371,14 @@ class Game:
                                                 [pygame.image.load('images/1Clouds.png'),
                                                  pygame.image.load('images/2Clouds.png'),
                                                  pygame.image.load('images/3Clouds.png')],
-                                                200)
+                                                350)
                 backgroundElements.append(cloudsLeft)
             elif bgBlock.type == MapProjectionBlockType.CLOUD_RIGHT:
                 cloudsRight = AnimatedBackground(bgBlock.rect,
                                                  [pygame.image.load('images/2Clouds.png'),
                                                   pygame.image.load('images/3Clouds.png'),
                                                   pygame.image.load('images/1Clouds.png')],
-                                                 200)
+                                                 350)
                 backgroundElements.append(cloudsRight)
 
     def process(self, screen : pygame.Surface):
@@ -452,6 +469,8 @@ class Menu:
     LEVEL_OPTIONS = 1
     LEVEL_CHAR = 2
     LEVEL_LEVEL = 3
+    LEVEL_BOY = 4
+    LEVEL_GIRL = 5
 
     def __init__(self):
         self.config = GameConfig()
@@ -470,6 +489,8 @@ class Menu:
         self.game_level_1 = pygame.image.load('images/Level1_button.png').convert_alpha()
         self.game_level_2 = pygame.image.load('images/Level2_button.png').convert_alpha()
         self.game_level_3 = pygame.image.load('images/Level3_button.png').convert_alpha()
+        self.boyselected = pygame.image.load('images/boyselected.png').convert_alpha()
+        self.girlselected = pygame.image.load('images/girlselected.png').convert_alpha()
 
 
         self.play_button = button.Button(336, 125, self.play_img, 1)
@@ -480,7 +501,11 @@ class Menu:
         self.keys_button = button.Button(246, 325, self.keys_img, 1)
         self.back_button = button.Button(332, 450, self.back_img, 1)
         self.boy_button = button.Button(100, 100, self.boy_img, 5)
+        #n
+        self.boyselected_button = button.Button(100, 100, self.boyselected, 5)
         self.girl_button = button.Button(400, 100, self.girl_img, 5)
+        #n
+        self.girlselected_button = button.Button(400, 100, self.girlselected, 5)
         self.game_level_button_1 = button.Button(230, 100, self.game_level_1, 1)
         self.game_level_button_2 = button.Button(230, 200, self.game_level_2, 1)
         self.game_level_button_3 = button.Button(230, 300, self.game_level_3, 1)
@@ -491,7 +516,7 @@ class Menu:
                 self.running = False
 
         ##screen.fill((238, 18, 137))
-        screen.fill((0, 244, 0))
+        screen.fill((122, 0, 100))
         if self.level == self.LEVEL_ROOT:
             if self.play_button.draw(screen):
                 self.level = self.LEVEL_PLAY
@@ -510,9 +535,15 @@ class Menu:
             if self.boy_button.draw(screen):
                 self.config.player = 'Boy'
                 print("CHAR -> " + str(self.config.player))
+                #BOY_LEVEL
+            if self.config.player == 'Boy':
+                self.boyselected_button.draw(screen)
             if self.girl_button.draw(screen):
                 self.config.player = 'Girl'
                 print("CHAR -> " + str(self.config.player))
+                #GIRL_LEVEL
+            if self.config.player == 'Girl':
+                self.girlselected_button.draw(screen)           
             if self.back_button.draw(screen):
                 self.level = self.LEVEL_ROOT
         elif self.level == self.LEVEL_LEVEL:
@@ -527,6 +558,7 @@ class Menu:
             if self.game_level_button_3.draw(screen):
                 self.config.level = 3
                 print("Level -> " + str(self.config.level))
+            
 
         return self.running
 
