@@ -1,18 +1,18 @@
                                                                   
- cccc  ccccccccccccccccccccc ++++++  ++++++ CCCCCCCCCCCCCCCCCCCCCC
- cccc  ccccccccccccccccccccc ++++++  ++++++ CCCCCCCCCCCCCCCCCCCCCC
- cccc  ccccccccccccccccccccc ++++++  ++++++ CCCCCCCCCCCCCCCCCCCCCC
+ cccc  ccccccccccccccccccccc   ++++++       CCCCCCCCCCCCCCCCCCCCCC
+ cccc  ccccccccccccccccccccc   ++++++       CCCCCCCCCCCCCCCCCCCCCC
+ cccc  ccccccccccccccccccccc   ++++++       CCCCCCCCCCCCCCCCCCCCCC
  cccc  ccccccccccccccccccccc                CCCCCCCCCCCCCCCCCCCCCC
  cccc  ccccccccccccccccccccc                CCCCCCCCCCCCCCCCCCCCCC
                                                                   
                                                                   
                                                                   
                                                                   
-                                                                  
-                                                                  
-                                                                  
-                                                                  
-  ffffffffffffffff       ppppp            ffffffffffffffffffffffff
+                                                          nnnnnnnn
+nnnnnnnn                                         nnnnnnnn         
+                                        nnnnnnnn                  
+         nnnnnn                                                   
+                         ppppp   nnnnn    ffffffffffffffffffffffff
   ffffffffffffffff       ppppp            ffffffffffffffffffffffff
   ffffffffffffffff       ppppp            ffffffffffffffffffffffff
 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
