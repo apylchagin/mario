@@ -102,7 +102,7 @@ class MapProjection:
         # Select all blocks which are above
         # the rectangle
         for block in self.blocks:
-            if block.type in [MapProjectionBlockType.GROUND]:
+            if block.type in [MapProjectionBlockType.GROUND, MapProjectionBlockType.BLACK_GROUND, MapProjectionBlockType.NEW_GROUND]:
                 if (__x >= block.rect.left) and (__x <= block.rect.right) and (__y <= block.rect.top):
                     if (__yMinDist > (block.rect.top - __y)):
                         __result = block.rect
@@ -349,13 +349,13 @@ class Game:
                 backgroundElements.append(
                     StaticScaledBackground(bgBlock.rect,
                                            pygame.image.load('images/bground.png'))
-                )     
-        
+                )
+
             elif bgBlock.type == MapProjectionBlockType.NEW_GROUND:
                 backgroundElements.append(
                     StaticScaledBackground(bgBlock.rect,
                                            pygame.image.load('images/newground.png'))
-                )     
+                )
             elif bgBlock.type == MapProjectionBlockType.GROUND:
                 backgroundElements.append(
                    StaticScaledBackground(bgBlock.rect,
@@ -543,7 +543,7 @@ class Menu:
                 print("CHAR -> " + str(self.config.player))
                 #GIRL_LEVEL
             if self.config.player == 'Girl':
-                self.girlselected_button.draw(screen)           
+                self.girlselected_button.draw(screen)
             if self.back_button.draw(screen):
                 self.level = self.LEVEL_ROOT
         elif self.level == self.LEVEL_LEVEL:
@@ -558,7 +558,7 @@ class Menu:
             if self.game_level_button_3.draw(screen):
                 self.config.level = 3
                 print("Level -> " + str(self.config.level))
-            
+
 
         return self.running
 
