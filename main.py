@@ -36,6 +36,10 @@ class MapProjectionBlockType(Enum):
     NEW_GROUND = 'n'
     BLACK_GROUND = 'b'
     HOUSE = 'h'
+    RED_GROUND = 'r'
+    SUN = 's'
+    GREEN_GROUND = 'g'
+    RED_HOUSE = 'R'
 
 class MapProjectionBlock:
     type = None
@@ -67,6 +71,15 @@ class MapProjectionBlock:
             return MapProjectionBlockType.HOUSE
         if type == 'c':
             return MapProjectionBlockType.CLOUD_LEFT
+        if type == 'g':
+            return MapProjectionBlockType.GREEN_GROUND
+        if type == 'r':
+            return MapProjectionBlockType.RED_GROUND
+        if type == 'R':
+            return MapProjectionBlockType.RED_HOUSE
+        if type == 's':
+            return MapProjectionBlockType.SUN
+            
         return MapProjectionBlockType.MISC
 
     def sizes(self):
@@ -102,7 +115,7 @@ class MapProjection:
         # Select all blocks which are above
         # the rectangle
         for block in self.blocks:
-            if block.type in [MapProjectionBlockType.GROUND, MapProjectionBlockType.BLACK_GROUND, MapProjectionBlockType.NEW_GROUND]:
+            if block.type in [MapProjectionBlockType.GROUND, MapProjectionBlockType.BLACK_GROUND, MapProjectionBlockType.NEW_GROUND, MapProjectionBlockType.GREEN_GROUND, MapProjectionBlockType.RED_GROUND]:
                 if (__x >= block.rect.left) and (__x <= block.rect.right) and (__y <= block.rect.top):
                     if (__yMinDist > (block.rect.top - __y)):
                         __result = block.rect
@@ -291,7 +304,7 @@ DECREASE_BASE = 1.01
 class GameConfig:
     def __init__(self):
         self.player = 'Girl'
-        self.level = 1 # Possible values: 1, 2, 3
+        self.level = 1 # Possible values: 1, 2, 3, 4, 5
 
 class Game:
     def __init__(self, config: GameConfig):
@@ -319,6 +332,10 @@ class Game:
             levelName = "maps/level2.map.txt"
         elif config.level == 3:
             levelName = "maps/level3.map.txt"
+        elif config.level == 4:
+            levelName = "maps/level4.map.txt"
+        elif config.level == 5:
+            levelName = "maps/level5.map.txt"
 
         levelMap = LevelMap()
         levelMap.loadFromFile(levelName)
@@ -355,6 +372,26 @@ class Game:
                 backgroundElements.append(
                     StaticScaledBackground(bgBlock.rect,
                                            pygame.image.load('images/newground.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.GREEN_GROUND:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/greenground.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.RED_GROUND:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/redground.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.RED_HOUSE:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/redhouse.png'))
+                )
+            elif bgBlock.type == MapProjectionBlockType.SUN:
+                backgroundElements.append(
+                    StaticScaledBackground(bgBlock.rect,
+                                           pygame.image.load('images/sun.png'))
                 )
             elif bgBlock.type == MapProjectionBlockType.GROUND:
                 backgroundElements.append(
@@ -489,8 +526,18 @@ class Menu:
         self.game_level_1 = pygame.image.load('images/Level1_button.png').convert_alpha()
         self.game_level_2 = pygame.image.load('images/Level2_button.png').convert_alpha()
         self.game_level_3 = pygame.image.load('images/Level3_button.png').convert_alpha()
+        self.game_level_4 = pygame.image.load('images/Level4_button.png').convert_alpha()
+        self.game_level_5 = pygame.image.load('images/Level5_button.png').convert_alpha()
+        #selected level button
+        self.selectedgame_level_1 = pygame.image.load('images/Level1selected_button.png').convert_alpha()
+        self.selectedgame_level_2 = pygame.image.load('images/Level2selected_button.png').convert_alpha()
+        self.selectedgame_level_3 = pygame.image.load('images/Level3selected_button.png').convert_alpha()
+        self.selectedgame_level_4 = pygame.image.load('images/Level4selected_button.png').convert_alpha()
+        self.selectedgame_level_5 = pygame.image.load('images/Level5selected_button.png').convert_alpha()
+
         self.boyselected = pygame.image.load('images/boyselected.png').convert_alpha()
         self.girlselected = pygame.image.load('images/girlselected.png').convert_alpha()
+        
 
 
         self.play_button = button.Button(336, 125, self.play_img, 1)
@@ -503,12 +550,21 @@ class Menu:
         self.boy_button = button.Button(100, 100, self.boy_img, 5)
         #n
         self.boyselected_button = button.Button(100, 100, self.boyselected, 5)
-        self.girl_button = button.Button(400, 100, self.girl_img, 5)
+        self.girl_button = button.Button(400, 160, self.girl_img, 5)
         #n
-        self.girlselected_button = button.Button(400, 100, self.girlselected, 5)
-        self.game_level_button_1 = button.Button(230, 100, self.game_level_1, 1)
-        self.game_level_button_2 = button.Button(230, 200, self.game_level_2, 1)
-        self.game_level_button_3 = button.Button(230, 300, self.game_level_3, 1)
+        self.girlselected_button = button.Button(400, 160, self.girlselected, 5)
+        # levels button
+        self.game_level_button_1 = button.Button(230, 20, self.game_level_1, 1)
+        self.game_level_button_2 = button.Button(230, 100, self.game_level_2, 1)
+        self.game_level_button_3 = button.Button(230, 180, self.game_level_3, 1)
+        self.game_level_button_4 = button.Button(230, 260, self.game_level_4, 1)
+        self.game_level_button_5 = button.Button(230, 340, self.game_level_5, 1)
+        #levels selected
+        self.selectedgame_level_1_button = button.Button(230, 20, self.selectedgame_level_1, 1)
+        self.selectedgame_level_2_button = button.Button(230, 100, self.selectedgame_level_2, 1)
+        self.selectedgame_level_3_button = button.Button(230, 180, self.selectedgame_level_3, 1)
+        self.selectedgame_level_4_button = button.Button(230, 260, self.selectedgame_level_4, 1)
+        self.selectedgame_level_5_button = button.Button(230, 340, self.selectedgame_level_5, 1)
 
     def process(self, screen : pygame.Surface):
         for e in pygame.event.get():
@@ -549,15 +605,36 @@ class Menu:
         elif self.level == self.LEVEL_LEVEL:
             if self.back_button.draw(screen):
                 self.level = self.LEVEL_ROOT
+                #level1
             if self.game_level_button_1.draw(screen):
                 self.config.level = 1
                 print("Level -> " + str(self.config.level))
+            if self.config.level == 1:
+                self.selectedgame_level_1_button.draw(screen)
+                #level2
             if self.game_level_button_2.draw(screen):
                 self.config.level = 2
                 print("Level -> " + str(self.config.level))
+            if self.config.level == 2:
+                self.selectedgame_level_2_button.draw(screen)
+                #level3
             if self.game_level_button_3.draw(screen):
                 self.config.level = 3
                 print("Level -> " + str(self.config.level))
+            if self.config.level == 3:
+                self.selectedgame_level_3_button.draw(screen)
+                #level4
+            if self.game_level_button_4.draw(screen):
+                self.config.level = 4
+                print("Level -> " + str(self.config.level))
+            if self.config.level == 4:
+                self.selectedgame_level_4_button.draw(screen)
+                #level5
+            if self.game_level_button_5.draw(screen):
+                self.config.level = 5
+                print("Level -> " + str(self.config.level))
+            if self.config.level == 5:
+                self.selectedgame_level_5_button.draw(screen)
 
 
         return self.running
