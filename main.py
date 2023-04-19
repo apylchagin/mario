@@ -341,6 +341,7 @@ class Game:
         self.retry_rect = (W // 2 - self.retry_rect.width // 2, H // 2 + 10)
 
         self.goomba_count = 0
+        self.level = config.level
 
         self.kickSound = pygame.mixer.Sound("sounds/kick.wav")
         self.themeSong = pygame.mixer.Sound("sounds/theme.mp3")
@@ -474,8 +475,14 @@ class Game:
 
             if elapsed > self.spawn_delay:
                 self.last_spawn_time = now
-                self.goomba_count += 1
-                self.goombas.append(Goomba(enemy_image2 if self.goomba_count % 2 else enemy_image1))
+                # Select goomba based on level and counter
+                if self.level == 2:
+                    self.goomba_count += 1
+                elif self.level == 3:
+                    self.goomba_count = 0
+                else:
+                    self.goomba_count = 1
+                self.goombas.append(Goomba(enemy_image2 if self.goomba_count % 2 == 1 else enemy_image1))
 
             self.player.update(self.projectMap)
             self.player.draw(screen)
@@ -597,7 +604,7 @@ class Menu:
     # This method load image and does some image blurring
     def blurImage(path: str) -> pygame.Surface:
         surface: pygame.Surface = pygame.image.load(path).convert_alpha()
-        scale:float = 1.0 / float(3)
+        scale:float = 1.0 / float(5)
         surf_size: tuple[int, int] = surface.get_size()
         scale_size: tuple[int, int] = (int(surf_size[0]*scale), int(surf_size[1]*scale))
         surf: pygame.Surface = pygame.transform.smoothscale(surface, scale_size)
