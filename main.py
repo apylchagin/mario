@@ -538,6 +538,13 @@ class Menu:
         self.boyselected = pygame.image.load('images/boyselected.png').convert_alpha()
         self.girlselected = pygame.image.load('images/girlselected.png').convert_alpha()
 
+        self.bg_l_1 = pygame.image.load('images/bg_l_1.png').convert_alpha()
+        self.bg_l_2 = pygame.image.load('images/bg_l_2.png').convert_alpha()
+        self.bg_l_3 = pygame.image.load('images/bg_l_3.png').convert_alpha()
+        self.bg_l_4 = pygame.image.load('images/bg_l_4.png').convert_alpha()
+        self.bg_l_5 = pygame.image.load('images/bg_l_5.png').convert_alpha()
+        self.current_bg = self.bg_l_1
+
 
 
         self.play_button = button.Button(336, 125, self.play_img, 1)
@@ -571,8 +578,10 @@ class Menu:
             if e.type == pygame.QUIT:
                 self.running = False
 
-        ##screen.fill((238, 18, 137))
-        screen.fill((122, 0, 100))
+
+        screen.blit(self.current_bg, (0,0))
+        #screen.fill((238, 18, 137))
+        # screen.fill((122, 0, 100))
         if self.level == self.LEVEL_ROOT:
             if self.play_button.draw(screen):
                 self.level = self.LEVEL_PLAY
@@ -608,31 +617,32 @@ class Menu:
                 #level1
             if self.game_level_button_1.draw(screen):
                 self.config.level = 1
-                print("Level -> " + str(self.config.level))
+                self.current_bg = self.bg_l_1
+                #print("Level -> " + str(self.config.level))
             if self.config.level == 1:
                 self.selectedgame_level_1_button.draw(screen)
                 #level2
             if self.game_level_button_2.draw(screen):
                 self.config.level = 2
-                print("Level -> " + str(self.config.level))
+                self.current_bg = self.bg_l_2
             if self.config.level == 2:
                 self.selectedgame_level_2_button.draw(screen)
                 #level3
             if self.game_level_button_3.draw(screen):
                 self.config.level = 3
-                print("Level -> " + str(self.config.level))
+                self.current_bg = self.bg_l_3
             if self.config.level == 3:
                 self.selectedgame_level_3_button.draw(screen)
                 #level4
             if self.game_level_button_4.draw(screen):
                 self.config.level = 4
-                print("Level -> " + str(self.config.level))
+                self.current_bg = self.bg_l_4
             if self.config.level == 4:
                 self.selectedgame_level_4_button.draw(screen)
                 #level5
             if self.game_level_button_5.draw(screen):
                 self.config.level = 5
-                print("Level -> " + str(self.config.level))
+                self.current_bg = self.bg_l_5
             if self.config.level == 5:
                 self.selectedgame_level_5_button.draw(screen)
 
