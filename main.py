@@ -139,9 +139,16 @@ class Entity:
         self.gravity = 0.5
         self.is_grounded = False
 
+    # Handles the input processing
     def handle_input(self):
         pass
 
+    # This method does post processing of the
+    # entity position
+    def restrict_motion(self):
+        pass
+    
+    # Performs the character 'kill'
     def kill(self):
         self.is_dead = True
         self.x_speed = -self.x_speed
@@ -155,7 +162,7 @@ class Entity:
         self.rect.x += self.x_speed
         self.y_speed += self.gravity
         self.rect.y += self.y_speed
-
+        self.restrict_motion()
         if not self.is_dead:
             if self.rect.top > __ground.top:
                 self.is_out = True
@@ -199,6 +206,12 @@ class Player(Entity):
         super().__init__(image)
         self.__jumpSound = pygame.mixer.Sound("sounds/jump.wav")
         self.respawn()
+
+    def restrict_motion(self):
+        if self.rect.right > W:
+            self.rect.right = W
+        elif self.rect.left <= 0:
+            self.rect.left = 0
 
     def handle_input(self):
         self.x_speed = 0
