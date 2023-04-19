@@ -239,7 +239,7 @@ class Player(Entity):
 
 # Defines enemy entity
 class Goomba(Entity):
-    def __init__(self):
+    def __init__(self, enemy_image):
         super().__init__(enemy_image)
         self.spawn()
 
@@ -265,13 +265,19 @@ backgroundElements = []
 
 # Defines full set of movement related sprites for the enemy
 # character
-enemy_image = SpriteMoves(
+enemy_image1 = SpriteMoves(
     SpriteDirection(Sprite('images/ngoomba.png', (60, 60)), Sprite('images/ngoomba.png', (60, 60))),
     SpriteDirection(Sprite('images/ngoomba.png', (60, 60)), Sprite('images/ngoomba.png', (60, 60))),
     SpriteDirection(Sprite('images/ngoomba.png', (60, 60)), Sprite('images/ngoomba.png', (60, 60))),
     Sprite('images/deadngoomba.png', (60, 60))
 )
 
+enemy_image2 = SpriteMoves(
+    SpriteDirection(Sprite('images/newngoomba.png', (60, 60)), Sprite('images/newngoomba.png', (60, 60))),
+    SpriteDirection(Sprite('images/newngoomba.png', (60, 60)), Sprite('images/newngoomba.png', (60, 60))),
+    SpriteDirection(Sprite('images/newngoomba.png', (60, 60)), Sprite('images/newngoomba.png', (60, 60))),
+    Sprite('images/deadngoomba.png', (60, 60))
+)
 
 class Score:
     value = 0
@@ -334,6 +340,7 @@ class Game:
         self.retry_rect = self.retry_text.get_rect()
         self.retry_rect = (W // 2 - self.retry_rect.width // 2, H // 2 + 10)
 
+        self.goomba_count = 0
 
         self.kickSound = pygame.mixer.Sound("sounds/kick.wav")
         self.themeSong = pygame.mixer.Sound("sounds/theme.mp3")
@@ -467,7 +474,8 @@ class Game:
 
             if elapsed > self.spawn_delay:
                 self.last_spawn_time = now
-                self.goombas.append(Goomba())
+                self.goomba_count += 1
+                self.goombas.append(Goomba(enemy_image2 if self.goomba_count % 2 else enemy_image1))
 
             self.player.update(self.projectMap)
             self.player.draw(screen)
