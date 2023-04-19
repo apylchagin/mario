@@ -79,7 +79,7 @@ class MapProjectionBlock:
             return MapProjectionBlockType.RED_HOUSE
         if type == 's':
             return MapProjectionBlockType.SUN
-            
+
         return MapProjectionBlockType.MISC
 
     def sizes(self):
@@ -537,7 +537,7 @@ class Menu:
 
         self.boyselected = pygame.image.load('images/boyselected.png').convert_alpha()
         self.girlselected = pygame.image.load('images/girlselected.png').convert_alpha()
-        
+
 
 
         self.play_button = button.Button(336, 125, self.play_img, 1)
@@ -547,12 +547,12 @@ class Menu:
         self.level_button = button.Button(225, 200, self.level_img, 1)
         self.keys_button = button.Button(246, 325, self.keys_img, 1)
         self.back_button = button.Button(332, 450, self.back_img, 1)
-        self.boy_button = button.Button(100, 100, self.boy_img, 5)
+        self.boy_button = button.Button(130, 90, self.boy_img, 3.8)
+        self.boyselected_button = button.Button(130, 90, self.boyselected, 3.8)
+
+        self.girl_button = button.Button(430, 90, self.girl_img, 5)
         #n
-        self.boyselected_button = button.Button(100, 100, self.boyselected, 5)
-        self.girl_button = button.Button(400, 160, self.girl_img, 5)
-        #n
-        self.girlselected_button = button.Button(400, 160, self.girlselected, 5)
+        self.girlselected_button = button.Button(430, 90, self.girlselected, 5)
         # levels button
         self.game_level_button_1 = button.Button(230, 20, self.game_level_1, 1)
         self.game_level_button_2 = button.Button(230, 100, self.game_level_2, 1)
