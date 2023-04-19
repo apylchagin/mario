@@ -538,11 +538,11 @@ class Menu:
         self.boyselected = pygame.image.load('images/boyselected.png').convert_alpha()
         self.girlselected = pygame.image.load('images/girlselected.png').convert_alpha()
 
-        self.bg_l_1 = pygame.image.load('images/bg_l_1.png').convert_alpha()
-        self.bg_l_2 = pygame.image.load('images/bg_l_2.png').convert_alpha()
-        self.bg_l_3 = pygame.image.load('images/bg_l_3.png').convert_alpha()
-        self.bg_l_4 = pygame.image.load('images/bg_l_4.png').convert_alpha()
-        self.bg_l_5 = pygame.image.load('images/bg_l_5.png').convert_alpha()
+        self.bg_l_1 = Menu.blurImage('images/bg_l_1.png')
+        self.bg_l_2 = Menu.blurImage('images/bg_l_2.png')
+        self.bg_l_3 = Menu.blurImage('images/bg_l_3.png')
+        self.bg_l_4 = Menu.blurImage('images/bg_l_4.png')
+        self.bg_l_5 = Menu.blurImage('images/bg_l_5.png')
         self.current_bg = self.bg_l_1
 
 
@@ -572,6 +572,16 @@ class Menu:
         self.selectedgame_level_3_button = button.Button(230, 180, self.selectedgame_level_3, 1)
         self.selectedgame_level_4_button = button.Button(230, 260, self.selectedgame_level_4, 1)
         self.selectedgame_level_5_button = button.Button(230, 340, self.selectedgame_level_5, 1)
+
+    # This method load image and does some image blurring
+    def blurImage(path: str) -> pygame.Surface:
+        surface: pygame.Surface = pygame.image.load(path).convert_alpha()
+        scale:float = 1.0 / float(3)
+        surf_size: tuple[int, int] = surface.get_size()
+        scale_size: tuple[int, int] = (int(surf_size[0]*scale), int(surf_size[1]*scale))
+        surf: pygame.Surface = pygame.transform.smoothscale(surface, scale_size)
+        surf = pygame.transform.smoothscale(surf, surf_size)
+        return surf
 
     def process(self, screen : pygame.Surface):
         for e in pygame.event.get():
